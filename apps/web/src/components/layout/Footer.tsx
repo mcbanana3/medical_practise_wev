@@ -41,7 +41,7 @@ export function Footer({ items }: FooterProps) {
             ))}
 
             <a
-              href="/"
+              href="/development"
               className="inline-flex min-h-11 items-center gap-2 text-sm font-medium hover:underline"
             >
               API connection check

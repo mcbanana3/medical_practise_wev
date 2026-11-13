@@ -12,12 +12,18 @@ type HeaderProps = {
   homeHref: string;
   items: NavigationItem[];
   action: NavigationItem;
+  brandName?: string;
+  brandSubtitle?: string;
+  homeLabel?: string;
 };
 
 export function Header({
   homeHref,
   items,
   action,
+  brandName = "Practice.",
+  brandSubtitle = "Design-system preview",
+  homeLabel = "Practice design system home",
 }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuId = useId();
@@ -33,20 +39,21 @@ export function Header({
         <div className="flex min-h-22 items-center justify-between gap-5">
           <a
             href={homeHref}
-            aria-label="Practice design system home"
-            className="shrink-0"
+            aria-label={homeLabel}
+            className="min-w-0"
           >
-            <span className="block font-serif text-2xl tracking-tight">
-              Practice<span className="text-sage-ink">.</span>
+            <span className="block truncate font-serif text-2xl tracking-tight">
+              {brandName}
             </span>
-            <span className="mt-0.5 block text-[0.625rem] uppercase tracking-[0.2em] text-ink-muted">
-              Design-system preview
+
+            <span className="mt-0.5 block text-[0.625rem] uppercase tracking-[0.16em] text-ink-muted">
+              {brandSubtitle}
             </span>
           </a>
 
           <nav
             aria-label="Primary navigation"
-            className="hidden items-center gap-7 lg:flex"
+            className="hidden shrink-0 items-center gap-6 lg:flex"
           >
             {items.map((item) => (
               <a
@@ -61,7 +68,7 @@ export function Header({
 
           <a
             href={action.href}
-            className={`hidden lg:inline-flex ${buttonClasses("primary", "sm")}`}
+            className={`hidden shrink-0 lg:inline-flex ${buttonClasses("primary", "sm")}`}
           >
             {action.label}
             <ArrowUpRight size={16} aria-hidden="true" />
@@ -74,7 +81,7 @@ export function Header({
             aria-expanded={menuOpen}
             aria-controls={menuId}
             onClick={() => setMenuOpen((current) => !current)}
-            className="flex size-12 items-center justify-center rounded-full border border-line lg:hidden"
+            className="flex size-12 shrink-0 items-center justify-center rounded-full border border-line lg:hidden"
           >
             {menuOpen ? (
               <X size={21} aria-hidden="true" />
