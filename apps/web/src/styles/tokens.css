@@ -1,6 +1,30 @@
 @theme {
+  --font-sans: "Segoe UI", Arial, sans-serif;
+  --font-serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua",
+    Georgia, serif;
+
   --color-navy: #142b3a;
+  --color-navy-soft: #294453;
   --color-sage: #dfe8df;
   --color-sage-ink: #36513e;
   --color-warm: #f6f5f1;
+  --color-paper: #ffffff;
+  --color-ink-muted: #52616b;
+  --color-line: #dce1df;
+  --color-danger: #a62c32;
+  --color-danger-soft: #fff1f2;
+
+  --spacing: 0.25rem;
+
+  --breakpoint-sm: 40rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 80rem;
+  --breakpoint-2xl: 96rem;
+
+  --radius-control: 0.875rem;
+  --radius-card: 1.5rem;
+  --radius-panel: 2rem;
+
+  --shadow-soft: 0 8px 32px -16px rgb(20 43 58 / 18%);
 }
