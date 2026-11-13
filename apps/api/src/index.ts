@@ -1,4 +1,7 @@
-import { healthResponseSchema } from "@private-practice/shared";
+import {
+  healthResponseSchema,
+  reviewsResponseSchema,
+} from "@private-practice/shared";
 
 export default {
   async fetch(request: Request): Promise<Response> {
@@ -9,7 +12,12 @@ export default {
       "X-Content-Type-Options": "nosniff",
     };
 
-    if (url.pathname !== "/api/v1/health") {
+    const knownPaths = [
+      "/api/v1/health",
+      "/api/v1/reviews",
+    ];
+
+    if (!knownPaths.includes(url.pathname)) {
       return Response.json(
         {
           error: {
@@ -17,10 +25,7 @@ export default {
             message: "The requested API endpoint does not exist.",
           },
         },
-        {
-          status: 404,
-          headers,
-        },
+        { status: 404, headers },
       );
     }
 
@@ -40,6 +45,17 @@ export default {
           },
         },
       );
+    }
+
+    if (url.pathname === "/api/v1/reviews") {
+      // No review database is connected in this phase.
+      // An empty list is intentional; no reviews are fabricated.
+      const response = reviewsResponseSchema.parse({
+        source: "development-placeholder",
+        reviews: [],
+      });
+
+      return Response.json(response, { headers });
     }
 
     const response = healthResponseSchema.parse({

@@ -17,6 +17,13 @@ type HeaderProps = {
   homeLabel?: string;
 };
 
+const websiteItems: NavigationItem[] = [
+  { label: "About", href: "/about" },
+  { label: "Services", href: "/services" },
+  { label: "Reviews", href: "/reviews" },
+  { label: "Contact", href: "/contact" },
+];
+
 export function Header({
   homeHref,
   items,
@@ -28,6 +35,17 @@ export function Header({
   const [menuOpen, setMenuOpen] = useState(false);
   const menuId = useId();
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+
+  // The practice website uses "/" as its home.
+  // The separate design-system preview keeps its supplied navigation.
+  const isPracticeWebsite = homeHref === "/";
+  const navigationItems = isPracticeWebsite ? websiteItems : items;
+  const navigationAction = isPracticeWebsite
+    ? {
+        label: "Appointment information",
+        href: "/#appointments",
+      }
+    : action;
 
   function closeMenu() {
     setMenuOpen(false);
@@ -45,7 +63,6 @@ export function Header({
             <span className="block truncate font-serif text-2xl tracking-tight">
               {brandName}
             </span>
-
             <span className="mt-0.5 block text-[0.625rem] uppercase tracking-[0.16em] text-ink-muted">
               {brandSubtitle}
             </span>
@@ -53,9 +70,9 @@ export function Header({
 
           <nav
             aria-label="Primary navigation"
-            className="hidden shrink-0 items-center gap-6 lg:flex"
+            className="hidden shrink-0 items-center gap-7 lg:flex"
           >
-            {items.map((item) => (
+            {navigationItems.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
@@ -67,10 +84,10 @@ export function Header({
           </nav>
 
           <a
-            href={action.href}
+            href={navigationAction.href}
             className={`hidden shrink-0 lg:inline-flex ${buttonClasses("primary", "sm")}`}
           >
-            {action.label}
+            {navigationAction.label}
             <ArrowUpRight size={16} aria-hidden="true" />
           </a>
 
@@ -103,7 +120,7 @@ export function Header({
           }}
           className="border-t border-line pb-6 pt-3 lg:hidden"
         >
-          {items.map((item) => (
+          {navigationItems.map((item) => (
             <a
               key={item.href}
               href={item.href}
@@ -115,11 +132,11 @@ export function Header({
           ))}
 
           <a
-            href={action.href}
+            href={navigationAction.href}
             onClick={closeMenu}
             className={`mt-4 w-full ${buttonClasses()}`}
           >
-            {action.label}
+            {navigationAction.label}
             <ArrowUpRight size={17} aria-hidden="true" />
           </a>
         </nav>

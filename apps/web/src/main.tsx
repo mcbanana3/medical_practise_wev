@@ -3,6 +3,12 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
 import App from "./app/App";
 import HomePage from "./pages/HomePage";
+import AboutPage from "./pages/AboutPage";
+import ServicesPage from "./pages/ServicesPage";
+import ContactPage from "./pages/ContactPage";
+import ReviewsPage from "./pages/ReviewsPage";
+import PrivacyPage from "./pages/PrivacyPage";
+import TermsPage from "./pages/TermsPage";
 import DesignSystemPage from "./pages/DesignSystemPage";
 import { buttonClasses } from "./components/ui/Button";
 import "./styles/globals.css";
@@ -27,10 +33,10 @@ function NotFoundPage() {
           </Link>
 
           <Link
-            to="/design-system"
+            to="/contact"
             className={buttonClasses("secondary")}
           >
-            Design system
+            Contact information
           </Link>
         </div>
 
@@ -56,6 +62,12 @@ createRoot(rootElement).render(
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/services" element={<ServicesPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/reviews" element={<ReviewsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
         <Route path="/development" element={<App />} />
         <Route path="/design-system" element={<DesignSystemPage />} />
         <Route path="*" element={<NotFoundPage />} />
