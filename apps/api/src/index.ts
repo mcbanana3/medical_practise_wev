@@ -2,22 +2,28 @@ import {
   healthResponseSchema,
   reviewsResponseSchema,
 } from "@private-practice/shared";
+import { handleDemoScheduling } from "./routes/demo/scheduling";
+import type { DemoEnvironment } from "./routes/demo/scheduling";
 
 export default {
-  async fetch(request: Request): Promise<Response> {
+  async fetch(
+    request: Request,
+    env: DemoEnvironment,
+  ): Promise<Response> {
     const url = new URL(request.url);
+
+    if (url.pathname.startsWith("/api/v1/demo/")) {
+      return handleDemoScheduling(request, env);
+    }
 
     const headers = {
       "Cache-Control": "no-store",
       "X-Content-Type-Options": "nosniff",
     };
 
-    const knownPaths = [
-      "/api/v1/health",
-      "/api/v1/reviews",
-    ];
-
-    if (!knownPaths.includes(url.pathname)) {
+    if (
+      !["/api/v1/health", "/api/v1/reviews"].includes(url.pathname)
+    ) {
       return Response.json(
         {
           error: {
@@ -39,31 +45,28 @@ export default {
         },
         {
           status: 405,
-          headers: {
-            ...headers,
-            Allow: "GET",
-          },
+          headers: { ...headers, Allow: "GET" },
         },
       );
     }
 
     if (url.pathname === "/api/v1/reviews") {
-      // No review database is connected in this phase.
-      // An empty list is intentional; no reviews are fabricated.
-      const response = reviewsResponseSchema.parse({
-        source: "development-placeholder",
-        reviews: [],
-      });
-
-      return Response.json(response, { headers });
+      return Response.json(
+        reviewsResponseSchema.parse({
+          source: "development-placeholder",
+          reviews: [],
+        }),
+        { headers },
+      );
     }
 
-    const response = healthResponseSchema.parse({
-      status: "ok",
-      service: "private-practice-api",
-      message: "The local API is connected successfully.",
-    });
-
-    return Response.json(response, { headers });
+    return Response.json(
+      healthResponseSchema.parse({
+        status: "ok",
+        service: "private-practice-api",
+        message: "The local API is connected successfully.",
+      }),
+      { headers },
+    );
   },
 };

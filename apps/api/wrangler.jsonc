@@ -2,5 +2,16 @@
   "name": "private-practice-api",
   "main": "src/index.ts",
   "compatibility_date": "2026-11-01",
-  "workers_dev": false
-}
+  "workers_dev": false,
+  "vars": {
+    "DEMO_MODE": "local-only"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "private-practice-demo",
+      "database_id": "local-demo-only",
+      "migrations_dir": "migrations"
+    }
+  ]
+} 

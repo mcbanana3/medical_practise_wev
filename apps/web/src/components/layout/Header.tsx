@@ -36,15 +36,10 @@ export function Header({
   const menuId = useId();
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
-  // The practice website uses "/" as its home.
-  // The separate design-system preview keeps its supplied navigation.
   const isPracticeWebsite = homeHref === "/";
   const navigationItems = isPracticeWebsite ? websiteItems : items;
   const navigationAction = isPracticeWebsite
-    ? {
-        label: "Appointment information",
-        href: "/#appointments",
-      }
+    ? { label: "Demo appointments", href: "/appointments" }
     : action;
 
   function closeMenu() {
@@ -55,11 +50,7 @@ export function Header({
     <header className="sticky top-0 z-40 border-b border-line bg-white">
       <Container>
         <div className="flex min-h-22 items-center justify-between gap-5">
-          <a
-            href={homeHref}
-            aria-label={homeLabel}
-            className="min-w-0"
-          >
+          <a href={homeHref} aria-label={homeLabel} className="min-w-0">
             <span className="block truncate font-serif text-2xl tracking-tight">
               {brandName}
             </span>
