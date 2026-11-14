@@ -2,71 +2,133 @@ import {
   healthResponseSchema,
   reviewsResponseSchema,
 } from "@private-practice/shared";
+import type { Env } from "./types/env";
+import { ApiError, json } from "./lib/http";
+import {
+  enforceRateLimits,
+  validateConfiguration,
+  validateWriteOrigin,
+} from "./middleware/security";
+import { handleBackendRoutes } from "./routes/backend";
 import { handleDemoScheduling } from "./routes/demo/scheduling";
-import type { DemoEnvironment } from "./routes/demo/scheduling";
+
+function finalize(response: Response, requestId: string) {
+  const headers = new Headers(response.headers);
+
+  headers.set("X-Request-ID", requestId);
+  headers.set("Cache-Control", "no-store");
+  headers.set("X-Content-Type-Options", "nosniff");
+  headers.set("X-Frame-Options", "DENY");
+  headers.set("Referrer-Policy", "no-referrer");
+  headers.set("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'");
+
+  if (response.status === 429) {
+    headers.set("Retry-After", "60");
+  }
+
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
 
 export default {
-  async fetch(
-    request: Request,
-    env: DemoEnvironment,
-  ): Promise<Response> {
-    const url = new URL(request.url);
+  async fetch(request: Request, env: Env): Promise<Response> {
+    const requestId = crypto.randomUUID();
 
-    if (url.pathname.startsWith("/api/v1/demo/")) {
-      return handleDemoScheduling(request, env);
-    }
+    try {
+      validateConfiguration(request, env);
 
-    const headers = {
-      "Cache-Control": "no-store",
-      "X-Content-Type-Options": "nosniff",
-    };
+      const url = new URL(request.url);
 
-    if (
-      !["/api/v1/health", "/api/v1/reviews"].includes(url.pathname)
-    ) {
-      return Response.json(
-        {
-          error: {
-            code: "NOT_FOUND",
-            message: "The requested API endpoint does not exist.",
+      if (
+        url.pathname === "/api/v1/health" &&
+        request.method === "GET"
+      ) {
+        return finalize(
+          json(
+            healthResponseSchema.parse({
+              status: "ok",
+              service: "private-practice-api",
+              message: "The local API is connected successfully.",
+            }),
+          ),
+          requestId,
+        );
+      }
+
+      await enforceRateLimits(request, env);
+      validateWriteOrigin(request, env);
+
+      const backendResponse = await handleBackendRoutes(request, env);
+
+      if (backendResponse) {
+        return finalize(backendResponse, requestId);
+      }
+
+      if (
+        url.pathname === "/api/v1/reviews" &&
+        request.method === "GET"
+      ) {
+        // Preserve the existing public page contract.
+        // Synthetic moderation examples are exposed separately.
+        return finalize(
+          json(
+            reviewsResponseSchema.parse({
+              source: "development-placeholder",
+              reviews: [],
+            }),
+          ),
+          requestId,
+        );
+      }
+
+      if (
+        url.pathname === "/api/v1/availability" &&
+        request.method === "GET"
+      ) {
+        const forwarded = new URL(request.url);
+        forwarded.pathname = "/api/v1/demo/slots";
+
+        const response = await handleDemoScheduling(
+          new Request(forwarded.toString(), request),
+          env,
+        );
+
+        return finalize(response, requestId);
+      }
+
+      if (url.pathname.startsWith("/api/v1/demo/")) {
+        return finalize(
+          await handleDemoScheduling(request, env),
+          requestId,
+        );
+      }
+
+      throw new ApiError(
+        404,
+        "NOT_FOUND",
+        "The API endpoint or method is not available.",
+      );
+    } catch (error) {
+      const known = error instanceof ApiError;
+
+      return finalize(
+        json(
+          {
+            error: {
+              code: known ? error.code : "INTERNAL_ERROR",
+              message: known
+                ? error.message
+                : "The backend could not complete the request.",
+              requestId,
+            },
           },
-        },
-        { status: 404, headers },
+          known ? error.status : 500,
+        ),
+        requestId,
       );
     }
-
-    if (request.method !== "GET") {
-      return Response.json(
-        {
-          error: {
-            code: "METHOD_NOT_ALLOWED",
-            message: "This endpoint only accepts GET requests.",
-          },
-        },
-        {
-          status: 405,
-          headers: { ...headers, Allow: "GET" },
-        },
-      );
-    }
-
-    if (url.pathname === "/api/v1/reviews") {
-      return Response.json(
-        reviewsResponseSchema.parse({
-          source: "development-placeholder",
-          reviews: [],
-        }),
-        { headers },
-      );
-    }
-
-    return Response.json(
-      healthResponseSchema.parse({
-        status: "ok",
-        service: "private-practice-api",
-        message: "The local API is connected successfully.",
-      }),
-      { headers },
-    );
   },
 };

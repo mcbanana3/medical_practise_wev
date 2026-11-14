@@ -13,3 +13,4 @@ export type {
 
 export * from "./constants/demo-scheduling";
 export * from "./schemas/appointments";
+export * from "./schemas/backend";
